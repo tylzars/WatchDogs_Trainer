@@ -27,63 +27,43 @@ def update_wanted_level(process, level_input):
     print(f"Wanted level went from {prev_wanted_level} to {new_wanted_level}!")
 
 
-update_money(process, 456789)
-update_skill_points(process, 5)
-update_wanted_level(process, 0)
+
+#update_money(process, 456789)
+#update_skill_points(process, 5)
+#update_wanted_level(process, 0)
 
 
-# Not working code (thought it worked at one point...)
-def update_electronic_components(process, component_input):
-    if component_input > 20:
-        print("too many components")
-        return
-    
-    base_addr = pyMeow.get_module(process, "Disrupt_b64.dll")['base'] + 0x3BCA870
-    electronic_component_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x6E8, 0xB0, 0x1A0, 0x0, 0x0, 0xC])
-    prev_money = pyMeow.r_int(process, electronic_component_offset)
-    pyMeow.w_int(process, electronic_component_offset, component_input)
-    new_money = pyMeow.r_int(process, electronic_component_offset)
-    print(f"Had {prev_money} electric components to {new_money} eletric components.")
+# So the data in this struct gets loaded in at a different offsets each time.
+# However, the 0x0, 0x40, 0xB0 offsets do not change
+# This iterates through the values that change
+if False:
+    user_current_values =  [5, 4, 14, 6, 6]
 
-def update_system_keys(process, component_input):
-    if component_input > 8:
-        print("too many components")
-        return
-    
+    for i in range(0x0, 0x1000, 0x4):
+        base_addr = pyMeow.get_module(process, "Disrupt_b64.dll")['base'] + 0x3BBF518
+        try:
+            for j in range(0x0, 0x400, 0x4):
+                test_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x40, 0xB0, i, 0x0, 0x0, j])
+                iterator21 = pyMeow.r_int(process, test_offset)
+                if iterator21 in user_current_values:
+                    print(f"Found {iterator21} at: {hex(i) + ", " + hex(j)} ")
+        except:
+            continue
+
+# Use this to try the offsets the previous functions find
+# This approach is pretty fuzzy, hoping to get it working better
+def update_component(process, component_input, offset1, offset2):
     base_addr = pyMeow.get_module(process, "Disrupt_b64.dll")['base'] + 0x3BBF518
-    electronic_component_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x40, 0xB0, 0x1D0, 0x0, 0x0, 0xC])
-    prev_money = pyMeow.r_int(process, electronic_component_offset)
-    pyMeow.w_int(process, electronic_component_offset, component_input)
-    new_money = pyMeow.r_int(process, electronic_component_offset)
-    print(f"Had {prev_money} code components to {new_money} code components.")
+    component_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x40, 0xB0, offset1, 0x0, 0x0, offset2])
+    prev = pyMeow.r_int(process, component_offset)
+    pyMeow.w_int(process, component_offset, component_input)
+    new = pyMeow.r_int(process, component_offset)
+    print(f"{prev} to {new}")
 
-def update_chemical_components(process, component_input):
-    if component_input > 6:
-        print("too many components")
-        return
-    
-    base_addr = pyMeow.get_module(process, "Disrupt_b64.dll")['base'] + 0x3BBF518
-    electronic_component_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x40, 0xB0, 0xC8, 0x0, 0x0, 0xC])
-    prev_money = pyMeow.r_int(process, electronic_component_offset)
-    pyMeow.w_int(process, electronic_component_offset, component_input)
-    new_money = pyMeow.r_int(process, electronic_component_offset)
-    print(f"Had {prev_money} explosive components to {new_money} explosive components.")
+#update_component(process, 6, 0xf0, 0x39c)
 
-def update_unstable_chemical_components(process, component_input):
-    if component_input > 6:
-        print("too many components")
-        return
-    
-    ### This is not accurate, need to do in cheat engine
-    base_addr = pyMeow.get_module(process, "Disrupt_b64.dll")['base'] + 0x3BBFA00
-    electronic_component_offset = pyMeow.pointer_chain_64(process, base_addr, [0x0, 0x148, 0x48, 0x88, 0x0, 0x0, 0xD8C])
-    prev_money = pyMeow.r_int(process, electronic_component_offset)
-    pyMeow.w_int(process, electronic_component_offset, component_input)
-    new_money = pyMeow.r_int(process, electronic_component_offset)
-    print(f"Had {prev_money} explosive2 components to {new_money} explosive2 components.")
 
-#update_electronic_components(process, 13) # Broken
-#update_system_keys(process, 8) # Broken
-#update_chemical_components(process, 6) # Broken
-#update_unstable_chemical_components(process, 6) # Broken
-
+# Trying to modify the battery on your phone
+# The only thing Cheat Engine detects is the UI element
+# Using a debugger, I can see the UI value loaded from a struct in RCX
+# Needed to VEH Debugger to get CE to attached without crash
