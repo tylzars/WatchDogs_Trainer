@@ -66,4 +66,9 @@ def update_component(process, component_input, offset1, offset2):
 # Trying to modify the battery on your phone
 # The only thing Cheat Engine detects is the UI element
 # Using a debugger, I can see the UI value loaded from a struct in RCX
+# I traced out both of these address used in [RCX] and changing either doesn't result in a new value.
 # Needed to VEH Debugger to get CE to attached without crash
+
+# Tried searching for Health using the All option in CE
+# Got it narrowed down to a lot of floats but nothing changed there
+# Should try with a greater diversity of places to jump off??
